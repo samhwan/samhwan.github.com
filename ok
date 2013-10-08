@@ -1,0 +1,235 @@
+[root@tradeap1 ~]$cat t
+
+.SUFFIXES: .pc .c .o .h
+
+.pc.c:
+	$(PROC) $(PROC_INC_DIR) $(PROC_FLAGS) iname=$<
+
+#.c.o:
+#	$(CC) $(CFLAGS) $(LIBS) $(DEFINITIONS) -c $<
+#	$(MCM_LINK) $(MCM_OPTS) $*.c $(CC) $(CFLAGS) $(LIBS) $(DEFINITIONS) -c
+
+.c.o:
+	$(CC) $(CFLAGS) $(LIBS) $(DEFINITIONS) -c $<
+
+################################################################################
+#
+# Definitions & Flags
+#
+################################################################################
+#
+DEFINITIONS = $(G_DEFINITIONS) $(ORACLE_DEF)
+
+# ProC option
+# proc option은 make.config 에 정의 되어 있음.
+
+# Compile option
+### AIX ###
+#CFLAGS  = $(G_FLAGS) -brtl -qldbl128 -q64 -D_GLOBAL $(INCPATH)
+#LDFLAGS = -G -b64 -bM:SRE -bnoentry -bexpall -lc_r
+#ARFLAGS = -X64 rv
+
+### LINUX shared ###
+#CFLAGS  = $(G_FLAGS) -Bshareable -m64 -march=z196 -mtune=z196 -D_GLOBAL $(INCPATH)
+#LDFLAGS = -shared -Bshareable -E --export-dynamic 
+#ARFLAGS = -rv
+
+### zLINUX ###
+CFLAGS  = $(G_FLAGS) -std=gnu99 -m64 -march=z196 -mtune=z196 -D_GLOBAL $(INCPATH)
+LDFLAGS =  
+ARFLAGS = -rv
+
+### zLINUX ###
+#CFLAGS  = $(G_FLAGS) -std=gnu99 -Bshareable -m64 -march=z196 -mtune=z196 -D_GLOBAL $(INCPATH)
+#LDFLAGS = -shared -Bshareable -E --export-dynamic
+#ARFLAGS = -rv
+
+#MCM_HOME=/app/omagent/OpenMCM
+#MCM_LINK=$(MCM_HOME)/bin/McmMBL
+#MCM_OPTS=$(MCM_HOME)/config/mcm_mbl.opt
+#MCM_LIBS=-L$(MCM_HOME)/lib -lMcmMblAP -lMcmMatAP
+MCM_HOME=  
+MCM_LINK= 
+MCM_OPTS= 
+MCM_LIBS= 
+
+# Include & Library path
+INCPATH = -I$(INFOWAY_INC_DIR)         \
+          -I$(INFOWAY_INC_DIR)/infoway \
+          -I$(BASE_INC_DIR)            \
+          -I$(BASE_INC_DIR)/stkbnd     \
+          -I$(BASE_INC_DIR)/iip        \
+          -I$(BASE_INC_DIR)/ovsestk        \
+          -I$(BASE_INC_DIR)/dvtv        \
+          -I$(INFOWAY_HOME)/dbio/include \
+          -I$(BASE_INC_DIR)/table      \
+          -I$(FEP_INC_DIR)             
+
+#LIBPATH = -L$(INFOWAY_LIB_DIR)         \
+#          -L$(ORACLE_LIB_DIR)          \
+#          -L$(BASE_LIB_DIR)            \
+#          -L$(FEP_LIB_DIR)             \
+#          -L$(SSO_LIB_DIR)             \
+#          -L$(DAMO_LIB_DIR)
+
+LIBPATH = -L$(INFOWAY_LIB_DIR)         \
+          -L$(ORACLE_LIB_DIR)          \
+          -L$(BASE_LIB_DIR)            \
+          -L$(FEP_LIB_DIR)             
+
+# Library
+#LIBS    = $(SYS_LIB) $(BASE_LIB) $(FRAMEWORK_LIB) $(INFOWAY_LIB) $(ORACLE_LIB) $(MCM_LIBS) \
+          $(FEP_LIB) $(SSO_LIB) $(ORD_COMM_LIB) $(UPMU_LIB) $(IIP_LIB) $(DAMO_LIB)
+LIBS    = -Wl,--start-group $(SYS_LIB) $(BASE_LIB) $(FRAMEWORK_LIB) $(INFOWAY_LIB) \
+          $(FEP_LIB) $(ORD_COMM_LIB) $(UPMU_LIB) $(IIP_LIB) -Wl,--end-group $(ORACLE_LIB)
+#SYS_LIB = -lc128 -lc -lm
+SYS_LIB = -lc -lm
+BASE_LIB = -lbaselib
+FRAMEWORK_LIB = -lframework -ldbioarchive -lordlibsbd001
+INFOWAY_LIB = -linfowayso
+FEP_LIB = -lagent
+#SSO_LIB = -lnxsync64
+SSO_LIB = 
+ORD_COMM_LIB = -lordcomm
+#DAMO_LIB = -lscpdb_agent
+DAMO_LIB = 
+#UPMU_LIB = -lfwcommon -lrpmcomm -lcststkord -lfuture -lfuture_tr -lordfcsbsn -lordfrfocns           \
+#           -lordssoffbodsm -lordfrfommg -lordbsbndord -lordsshtrd -lcmrstkigrord -lpslcomm          \
+#           -lordssslfstksby -lordssnxtddcrrc -lordjcstkcomm -lovseord -lordcme \
+#           -lordecdvtvcomm -lovsedvtv_tr -lordmini -lordministk
+UPMU_LIB = -lfwcommon -lrpmcomm -lcststkord      \
+           -lordssoffbodsm -lordsshtrd -lcmrstkigrord -lpslcomm          \
+           -lordssslfstksby -lordssnxtddcrrc  -lordfcsbsn
+#IIP_LIB = -lkospirecv  -lfrborecv  -lfrnrrecv -lbndrecv -lcbsrecv -lordicrcv -lordimmngm -lordjrcns -lordercns
+IIP_LIB = -lkospirecv  -lfrborecv  -lfrnrrecv -lcbsrecv -lordicrcv -lordimmngm 
+
+######### END ###########
+######################################################################
+#
+# Makefile configuration for INFOWAY Engine & Library
+#
+# Date   : 2007-12-01
+# Author : INFOWAY Engine Dev Team
+#
+######################################################################
+
+#
+# Assign available tools
+#
+AR          = /usr/bin/ar
+#CC         = /usr/vacpp/bin/cc
+CC          = /usr/bin/gcc
+#ORACLE_HOME = /oracle/product/10.2
+ORACLE_HOME = /oracle/product/11.2.0.3
+
+CC_R        = /usr/bin/gcc
+PROC        = $(ORACLE_HOME)/bin/proc
+LD          = /usr/bin/ld
+RANLIB      = /usr/bin/ranlib
+RM          = /bin/rm
+CP          = /bin/cp
+STRIP       = /usr/bin/strip
+LEX         = /usr/bin/lex
+FLEX        = /usr/bin/flex
+YACC        = /usr/bin/yacc
+MAKEDEPEND  = /usr/bin/makedepend
+INFOWAY_HOME= /app/infoway
+
+#
+# Define machine type.
+#
+G_DEFINITIONS = $(MACHINE)
+#G_FLAGS = -O -qmaxmem=-1 -qarch=auto -qtune=auto -qcache=auto
+G_FLAGS = -g
+
+MACHINE = -DLINUX
+
+#
+# Common directory
+#
+BASE_DIR        = $(ORD_C_SRC_HOME)
+SRC_DIR         = $(BASE_DIR)/src
+BIN_DIR         = $(INFOWAY_HOME)/bin
+APPBIN_DIR      = $(INFOWAY_HOME)/appbin
+BATBIN_DIR      = $(INFOWAY_HOME)/batch/bin
+
+#
+# Directory for common library and include
+#
+# Directory for common library and include
+#
+
+######################################################################
+# BASELIB Config
+######################################################################
+BASE_LIB_DIR  = $(BASE_DIR)/lib
+BASE_INC_DIR  = $(BASE_DIR)/include
+
+######################################################################
+# INFOWAY Config
+######################################################################
+INFOWAY_LIB_DIR  = $(INFOWAY_HOME)/lib
+INFOWAY_INC_DIR  = $(INFOWAY_HOME)/include
+
+######################################################################
+# FEP AGENT Config
+######################################################################
+FEP_HOME    = /JFEPAGT/HOME1
+
+FEP_LIB_DIR = $(FEP_HOME)/lib
+FEP_INC_DIR = $(FEP_HOME)/inc
+
+######################################################################
+# SSO AGENT Config
+######################################################################
+#SSO_HOME    = $(INFOWAY_HOME)/agent/sso
+SSO_HOME    = 
+
+SSO_LIB_DIR  = $(SSO_HOME)/lib
+SSO_INC_DIR  = $(SSO_HOME)/include
+
+######################################################################
+# DAMO config
+######################################################################
+DAMO_LIB_DIR  = 
+DAMO_INC_DIR  = 
+
+######################################################################
+# Oracle Config
+# ORACLE_HOME은 환경변수로 설정함. (oracle계정의 .profile 참조 권고) 
+######################################################################
+#USERID = ord_cusr/ord_cusr123
+USERID = idb_app/idb_app123@bmt
+
+#PROC_FLAGS = LTYPE=NONE MODE=ORACLE DBMS=V7 PARSE=NONE\
+             SQLCHECK=SEMANTICS USERID=$(USERID) LINES=YES
+PROC_FLAGS = LTYPE=NONE MODE=ORACLE DBMS=V7 PARSE=NONE\
+             SQLCHECK=SYNTAX USERID=$(USERID) LINES=YES
+
+PROC_INC_DIR = INCLUDE=$(ORACLE_HOME)/precomp/public \
+               INCLUDE=$(ORACLE_HOME)/rdbms/public   \
+               INCLUDE=$(ORACLE_HOME)/plsql/public   \
+               INCLUDE=$(BASE_INC_DIR)               \
+               INCLUDE=$(BASE_INC_DIR)/table         \
+               INCLUDE=$(BASE_INC_DIR)/stkbnd        \
+               INCLUDE=$(BASE_INC_DIR)/iip           \
+               INCLUDE=$(INFOWAY_HOME)/dbio/include
+
+
+ORACLE_LIB_DIR = $(ORACLE_HOME)/lib
+
+ORACLE_LIB = -L$(ORACLE_LIB_DIR) -lclntsh
+
+ORACLE_INC_FLAGS = -I$(ORACLE_HOME)/precomp/public  \
+                   -I$(ORACLE_HOME)/plsql/public    \
+                   -I$(ORACLE_HOME)/rdbms/public    \
+                   -I$(ORACLE_HOME)/plsql/public    \
+                   -I$(ORACLE_HOME)/rdbms/public    \
+                   -I$(BASE_INC_DIR)                \
+                   -I$(BASE_INC_DIR)/table
+
+#ORACLE_DEF = -D_LARGEFILE64_SOURCE=1 -D_LARGEFILE_SOURCE=1 \
+#             -DPRECOMP -D_REENTRANT -DNS_THREADS -D_ORACLE10
+
+ORACLE_DEF = -D_LARGEFILE64_SOURCE=1 -D_LARGEFILE_SOURCE=1 \
+             -DPRECOMP -D_REENTRANT -DNS_THREADS -D_ORACLE11
